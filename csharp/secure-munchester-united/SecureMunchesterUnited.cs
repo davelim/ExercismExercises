@@ -4,10 +4,13 @@ public class SecurityPassMaker
 {
     public string GetDisplayName(TeamSupport support)
     {
-        // throw new NotImplementedException($"Please implement the SecurityPassMaker.GetDisplayName() method");
         try {
             Staff s = (Staff) support;
-            return s.Title;
+            System.Text.StringBuilder sb = new(s.Title);
+            if (s is Security) {
+                sb.Append(" Priority Personel");
+            }
+            return sb.ToString();
         } catch (InvalidCastException e) {
             return "Too Important for a Security Pass";
         }
