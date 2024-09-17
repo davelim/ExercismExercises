@@ -14,7 +14,14 @@ public static class SimpleCalculator
                 result = operand1 * operand2;
                 break;
             case "/":
-                result = operand1 / operand2;
+                try
+                {
+                    result = operand1 / operand2;
+                }
+                catch (DivideByZeroException)
+                {
+                    return "Division by zero is not allowed.";
+                }
                 break;
             default:
                 if (operation == "")
