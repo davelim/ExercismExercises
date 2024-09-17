@@ -46,8 +46,10 @@ public class Identity
 
 public class Authenticator
 {
-    private readonly Identity _admin = new Identity("admin@exerc.ism",
-        new FacialFeatures("green", 0.9m));
+    private readonly HashSet<Identity> _admins = new ()
+    {
+        new Identity("admin@exerc.ism", new FacialFeatures("green", 0.9m))
+    };
     private HashSet<Identity> _registeredIdentities = new();
 
     public static bool AreSameFace(FacialFeatures faceA, FacialFeatures faceB)
@@ -57,7 +59,7 @@ public class Authenticator
 
     public bool IsAdmin(Identity identity)
     {
-        return identity.Equals(_admin);
+        return _admins.Contains(identity);
     }
 
     public bool Register(Identity identity)
