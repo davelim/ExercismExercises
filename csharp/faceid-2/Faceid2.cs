@@ -17,7 +17,7 @@ public class FacialFeatures
     }
     public override int GetHashCode()
     {
-        return System.HashCode.Combine(EyeColor, PhiltrumWidth);
+        return HashCode.Combine(EyeColor, PhiltrumWidth);
     }
 }
 
@@ -31,7 +31,15 @@ public class Identity
         Email = email;
         FacialFeatures = facialFeatures;
     }
-    // TODO: implement equality and GetHashCode() methods
+    public override bool Equals(Object other)
+    {
+        return other is Identity i
+            && (i.Email, i.FacialFeatures).Equals((Email, FacialFeatures));
+    }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine<string, FacialFeatures>(Email, FacialFeatures);
+    }
 }
 
 public class Authenticator
@@ -43,7 +51,7 @@ public class Authenticator
 
     public bool IsAdmin(Identity identity)
     {
-        throw new NotImplementedException("Please implement the Authenticator.IsAdmin() method");
+        return identity.Equals(new Identity("admin@exerc.ism", new FacialFeatures("green", 0.9m)));
     }
 
     public bool Register(Identity identity)
