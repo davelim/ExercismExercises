@@ -70,6 +70,6 @@ public class Authenticator
 
     public static bool AreSameObject(Identity identityA, Identity identityB)
     {
-        throw new NotImplementedException("Please implement the Authenticator.AreSameObject() method");
+        return Object.ReferenceEquals(identityA, identityB);
     }
 }
