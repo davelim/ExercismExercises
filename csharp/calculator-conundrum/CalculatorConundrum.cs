@@ -17,7 +17,13 @@ public static class SimpleCalculator
                 result = operand1 / operand2;
                 break;
             default:
-                throw new ArgumentException($"'{operation}' is not supported",
+                if (operation == "")
+                    throw new ArgumentException("'operation' cannot be empty string",
+                        "operation");
+                if (operation == null)
+                    throw new ArgumentNullException("'operation' cannot be null",
+                        "opration");
+                throw new ArgumentOutOfRangeException($"'{operation}' is not supported",
                     "operation");
                 break;
         }
