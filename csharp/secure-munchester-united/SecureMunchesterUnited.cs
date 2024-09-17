@@ -4,20 +4,13 @@ public class SecurityPassMaker
 {
     public string GetDisplayName(TeamSupport support)
     {
-        try
-        {
-            Staff s = (Staff) support;
-            System.Text.StringBuilder sb = new(s.Title);
-            if (s.GetType() == (typeof(Security)))
-            {
-                sb.Append(" Priority Personnel");
-            }
-            return sb.ToString();
-        }
-        catch (InvalidCastException)
+        if (support is not Staff)
         {
             return "Too Important for a Security Pass";
         }
+        return support.GetType() == (typeof(Security))
+                ? $"{support.Title} Priority Personnel"
+                : support.Title;
     }
 }
 
