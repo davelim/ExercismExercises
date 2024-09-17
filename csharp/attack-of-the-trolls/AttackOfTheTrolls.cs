@@ -1,23 +1,21 @@
 using System;
 
-// TODO: define the 'AccountType' enum
 [Flags]
 enum AccountType: byte
 {
-    Guest     = 0b00000001,
-    User      = 0b00000010,
-    Moderator = 0b00000100
+    Guest     = 0b_0000_0001,
+    User      = 0b_0000_0010,
+    Moderator = 0b_0000_0100
 }
 
-// TODO: define the 'Permission' enum
 [Flags]
 enum Permission: byte
 {
-    Read   = 0b00000001,
-    Write  = 0b00000010,
-    Delete = 0b00000100,
+    Read   = 0b_0000_0001,
+    Write  = 0b_0000_0010,
+    Delete = 0b_0000_0100,
     All    = Read | Write | Delete,
-    None   = 0b00000000
+    None   = 0b_0000_0000
 }
 
 static class Permissions
@@ -49,11 +47,11 @@ static class Permissions
 
     public static Permission Revoke(Permission current, Permission revoke)
     {
-        return current ^ (current & revoke);
+        return current & ~revoke;
     }
 
     public static bool Check(Permission current, Permission check)
     {
-        return ((current ^ check) & check) == 0;
+        return current.HasFlag(check);
     }
 }
