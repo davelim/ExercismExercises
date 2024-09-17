@@ -16,7 +16,7 @@ enum Permission: byte
     Read   = 0b00000001,
     Write  = 0b00000010,
     Delete = 0b00000100,
-    All    = 0b00000111,
+    All    = Read | Write | Delete,
     None   = 0b00000000
 }
 
@@ -44,7 +44,7 @@ static class Permissions
 
     public static Permission Grant(Permission current, Permission grant)
     {
-        throw new NotImplementedException("Please implement the (static) Permissions.Grant() method");
+        return current | grant;
     }
 
     public static Permission Revoke(Permission current, Permission revoke)
