@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic; // HashSet<>
+
 
 public class FacialFeatures
 {
@@ -44,6 +46,8 @@ public class Identity
 
 public class Authenticator
 {
+    private HashSet<Identity> _registeredIdentities = new();
+
     public static bool AreSameFace(FacialFeatures faceA, FacialFeatures faceB)
     {
         return faceA.Equals(faceB);
@@ -56,12 +60,12 @@ public class Authenticator
 
     public bool Register(Identity identity)
     {
-        throw new NotImplementedException("Please implement the Authenticator.Register() method");
+        return _registeredIdentities.Add(identity);
     }
 
     public bool IsRegistered(Identity identity)
     {
-        throw new NotImplementedException("Please implement the Authenticator.IsRegistered() method");
+        return _registeredIdentities.Contains(identity);
     }
 
     public static bool AreSameObject(Identity identityA, Identity identityB)
