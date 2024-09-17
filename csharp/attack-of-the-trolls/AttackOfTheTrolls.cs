@@ -54,6 +54,6 @@ static class Permissions
 
     public static bool Check(Permission current, Permission check)
     {
-        throw new NotImplementedException("Please implement the (static) Permissions.Check() method");
+        return ((current ^ check) & check) == 0;
     }
 }
