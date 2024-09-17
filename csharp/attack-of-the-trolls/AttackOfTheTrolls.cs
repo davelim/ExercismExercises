@@ -49,7 +49,7 @@ static class Permissions
 
     public static Permission Revoke(Permission current, Permission revoke)
     {
-        throw new NotImplementedException("Please implement the (static) Permissions.Revoke() method");
+        return current ^ (current & revoke);
     }
 
     public static bool Check(Permission current, Permission check)
