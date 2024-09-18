@@ -25,6 +25,14 @@ public class Orm
 
     public bool WriteSafely(string data)
     {
-        throw new NotImplementedException($"Please implement the Orm.WriteSafely() method");
+        try
+        {
+            Write(data);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
