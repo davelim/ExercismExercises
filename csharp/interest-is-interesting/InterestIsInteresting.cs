@@ -37,7 +37,7 @@ static class SavingsAccount
         int years = 0;
         while (balance < targetBalance)
         {
-            balance += Interest(balance);
+            balance = AnnualBalanceUpdate(balance);
             years++;
         }
         return years;
