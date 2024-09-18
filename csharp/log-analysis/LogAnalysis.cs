@@ -8,7 +8,14 @@ public static class LogAnalysis
         return startIndex == -1 ? log : log.Substring(startIndex+delimiter.Length);
     }
 
-    // TODO: define the 'SubstringBetween()' extension method on the `string` type
+    public static string SubstringBetween(
+        this string log, string delimiter1, string delimiter2)
+    {
+        int startIndex = log.IndexOf(delimiter1);
+        int endIndex = log.IndexOf(delimiter2);
+        int length = endIndex - (startIndex+delimiter1.Length);
+        return log.Substring(startIndex+delimiter1.Length, length);
+    }
     
     // TODO: define the 'Message()' extension method on the `string` type
 
