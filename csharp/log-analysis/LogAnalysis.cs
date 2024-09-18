@@ -22,5 +22,8 @@ public static class LogAnalysis
         return log.SubstringAfter(": ");
     }
 
-    // TODO: define the 'LogLevel()' extension method on the `string` type
+    public static string LogLevel(this string log)
+    {
+        return log.SubstringBetween("[", "]");
+    }
 }
