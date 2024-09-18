@@ -17,7 +17,8 @@ public class LogParser
 
     public int CountQuotedPasswords(string lines)
     {
-        throw new NotImplementedException($"Please implement the LogParser.CountQuotedPasswords() method");
+        string pattern = "\".*(?i)(password)(?-i).*\"";
+        return Regex.Count(lines, pattern);
     }
 
     public string RemoveEndOfLineText(string line)
