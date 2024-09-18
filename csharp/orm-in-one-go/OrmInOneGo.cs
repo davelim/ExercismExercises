@@ -11,15 +11,11 @@ public class Orm
 
     public void Write(string data)
     {
-        database.BeginTransaction();
-        try
+        using (var db = database)
         {
-            database.Write(data);
-            database.EndTransaction();
-        }
-        finally
-        {
-            database.Dispose();
+            db.BeginTransaction();
+            db.Write(data);
+            db.EndTransaction();
         }
     }
 
