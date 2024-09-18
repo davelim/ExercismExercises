@@ -5,7 +5,8 @@ public class LogParser
 {
     public bool IsValidLine(string text)
     {
-        throw new NotImplementedException($"Please implement the LogParser.IsValidLine() method");
+        string pattern = "^\\[(TRC|DBG|INF|WRN|ERR|FTL)\\]";
+        return Regex.IsMatch(text, pattern);
     }
 
     public string[] SplitLogLine(string text)
