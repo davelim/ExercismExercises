@@ -5,34 +5,36 @@ public static class SimpleCalculator
     public static string Calculate(int operand1, int operand2, string operation)
     {
         int result = 0;
-        switch (operation)
+        try
         {
-            case "+":
-                result = operand1 + operand2;
-                break;
-            case "*":
-                result = operand1 * operand2;
-                break;
-            case "/":
-                try
-                {
+            switch (operation)
+            {
+                case "+":
+                    result = operand1 + operand2;
+                    break;
+                case "*":
+                    result = operand1 * operand2;
+                    break;
+                case "/":
                     result = operand1 / operand2;
-                }
-                catch (DivideByZeroException)
-                {
-                    return "Division by zero is not allowed.";
-                }
-                break;
-            default:
-                if (operation == "")
+                    break;
+                case "":
                     throw new ArgumentException("'operation' cannot be empty string",
                         "operation");
-                if (operation == null)
+                    break;
+                case null:
                     throw new ArgumentNullException("'operation' cannot be null",
                         "opration");
-                throw new ArgumentOutOfRangeException($"'{operation}' is not supported",
-                    "operation");
-                break;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException($"'{operation}' is not supported",
+                        "operation");
+                    break;
+            }
+        }
+        catch (DivideByZeroException)
+        {
+            return "Division by zero is not allowed.";
         }
         return $"{operand1} {operation} {operand2} = {result}";
     }
