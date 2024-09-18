@@ -5,13 +5,13 @@ public class LogParser
 {
     public bool IsValidLine(string text)
     {
-        string pattern = "^\\[(TRC|DBG|INF|WRN|ERR|FTL)\\]";
+        string pattern = @"^\[(TRC|DBG|INF|WRN|ERR|FTL)\]";
         return Regex.IsMatch(text, pattern);
     }
 
     public string[] SplitLogLine(string text)
     {
-        string pattern = "<[\\^\\*=\\-]+>";
+        string pattern = @"<[\^\*=\-]+>";
         return Regex.Split(text, pattern);
     }
 
@@ -32,8 +32,7 @@ public class LogParser
         string[] linesWithPasswords = new string[lines.Length];
         for (int i = 0; i < lines.Length; i++)
         {
-            string line = lines[i];
-            Match match = Regex.Match(lines[i], "(?i)(password)(?-i)\\w+");
+            Match match = Regex.Match(lines[i], @"(?i)(password)(?-i)\w+");
             string password = match.Success ? match.Value : "--------";
             linesWithPasswords[i] = $"{password}: {lines[i]}";
         }
