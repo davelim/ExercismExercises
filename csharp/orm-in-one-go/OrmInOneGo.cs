@@ -11,7 +11,16 @@ public class Orm
 
     public void Write(string data)
     {
-        throw new NotImplementedException($"Please implement the Orm.Write() method");
+        database.BeginTransaction();
+        try
+        {
+            database.Write(data);
+            database.EndTransaction();
+        }
+        finally
+        {
+            database.Dispose();
+        }
     }
 
     public bool WriteSafely(string data)
