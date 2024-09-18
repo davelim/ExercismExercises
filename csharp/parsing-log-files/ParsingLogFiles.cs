@@ -23,7 +23,8 @@ public class LogParser
 
     public string RemoveEndOfLineText(string line)
     {
-        throw new NotImplementedException($"Please implement the LogParser.RemoveEndOfLineText() method");
+        string pattern = "end-of-line[0-9]+";
+        return Regex.Replace(line, pattern, String.Empty);
     }
 
     public string[] ListLinesWithPasswords(string[] lines)
