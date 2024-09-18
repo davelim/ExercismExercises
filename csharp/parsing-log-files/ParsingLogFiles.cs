@@ -11,7 +11,8 @@ public class LogParser
 
     public string[] SplitLogLine(string text)
     {
-        throw new NotImplementedException($"Please implement the LogParser.SplitLogLine() method");
+        string pattern = "<[\\^\\*=\\-]+>";
+        return Regex.Split(text, pattern);
     }
 
     public int CountQuotedPasswords(string lines)
