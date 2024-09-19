@@ -4,27 +4,36 @@ using System.Linq;
 
 public class GradeSchool
 {
-    private Dictionary<int, HashSet<string>> _gradesWithStudents = new();
+    private Dictionary<string, int> _students = new();
 
     public bool Add(string student, int grade)
     {
-        throw new NotImplementedException("You need to implement this method.");
+        try
+        {
+            _students.Add(student, grade);
+            return true;
+        }
+        catch(ArgumentException)
+        {
+            return false;
+        }
     }
 
     public IEnumerable<string> Roster()
     {
-        List<string> roster = new();
-        var sortedByGrades = _gradesWithStudents
-            .OrderBy(pair => pair.Key)
-            .ToDictionary(pair => pair.Key, pair => pair.Value);
-        foreach (var grade in sortedByGrades.Values) {
-            roster.AddRange(grade.OrderBy(name => name));
-        }
-        return roster;
+        return _students
+            .OrderBy(student => student.Value)
+            .ThenBy(student => student.Key)
+            .Select(student => student.Key)
+            .ToArray();
     }
 
     public IEnumerable<string> Grade(int grade)
     {
-        throw new NotImplementedException("You need to implement this method.");
+        return _students
+            .Where(student => student.Value == grade)
+            .Select(student => student.Key)
+            .OrderBy(student => student)
+            .ToArray();
     }
 }
