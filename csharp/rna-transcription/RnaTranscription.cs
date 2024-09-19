@@ -9,6 +9,6 @@ public static class RnaTranscription
     };
     public static string ToRna(string strand)
     {
-        return string.Join("",strand.Select(n => DnaToRna[n]));
+        return string.Join("",strand.Select(n => _dnaToRna[n]));
     }
 }
