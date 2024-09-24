@@ -1,7 +1,6 @@
 module TisburyTreasureHunt
 
-let getCoordinate (line: string * string): string =
-    failwith "Please implement the 'getCoordinate' function"
+let getCoordinate (line: string * string): string = snd line
 
 let convertCoordinate (coordinate: string): int * char = 
     failwith "Please implement the 'convertCoordinate' function"
