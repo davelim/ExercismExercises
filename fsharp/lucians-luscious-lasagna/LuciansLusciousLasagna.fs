@@ -2,8 +2,8 @@ module LuciansLusciousLasagna
 
 let expectedMinutesInOven = 40
 
-// TODO: define the 'remainingMinutesInOven' function
-let remainingMinutesInOven x = 42
+let remainingMinutesInOven minutesInOven =
+    expectedMinutesInOven - minutesInOven
 
 // TODO: define the 'preparationTimeInMinutes' function
 let preparationTimeInMinutes x = 42
