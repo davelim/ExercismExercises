@@ -8,5 +8,5 @@ let remainingMinutesInOven minutesInOven =
 let preparationTimeInMinutes numLayers =
     numLayers * 2
 
-// TODO: define the 'elapsedTimeInMinutes' function
-let elapsedTimeInMinutes x y = 42
+let elapsedTimeInMinutes numLayers minutesInOven =
+    preparationTimeInMinutes numLayers + minutesInOven
