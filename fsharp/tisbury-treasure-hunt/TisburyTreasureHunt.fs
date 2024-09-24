@@ -14,4 +14,8 @@ let compareRecords (azarasData: string * string) (ruisData: string * (int * char
     ruisCoordinate = azarasCoordinate
 
 let createRecord (azarasData: string * string) (ruisData: string * (int * char) * string) : (string * string * string * string) =
-    failwith "Please implement the 'createRecord' function"
+    let (treasure, coordinate) = azarasData
+    let (location, _, quadrant) = ruisData
+    if compareRecords azarasData ruisData
+        then coordinate, location, quadrant, treasure
+        else "", "", "", ""
