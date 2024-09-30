@@ -2,22 +2,21 @@ module GradeSchool
 
 type School = Map<int, string list>
 
-let empty: School = Map.empty<int, string list>
+let empty: School = Map.empty
 
-let add (student: string) (grade: int) (school: School): School =
-    let gradeToAddStudent =
-        match school.ContainsKey grade with
-        | true -> school[grade]
-        | _ -> []
+let grade (number: int) (school: School): string list =
+    school |> Map.tryFind number |> Option.defaultValue [] |> List.sort
 
+let add (student: string) (number: int) (school: School): School =
     let foundStudent =
-        school.Values
-        |> Seq.collect (fun x -> x)
+        school
+        |> Map.values
+        |> Seq.collect(fun x -> x)
         |> Seq.contains student
-
-    match foundStudent with
-    | false -> school.Add (grade, student::gradeToAddStudent)
-    | _ -> school
+    if (foundStudent) then
+        school
+    else
+        school |> Map.add number (student::(grade number school))
 
 let roster (school: School): string list =
     school
@@ -25,8 +24,3 @@ let roster (school: School): string list =
     |> Seq.map (fun li -> li |> List.sort)
     |> Seq.collect (fun x -> x)
     |> Seq.toList
-
-let grade (number: int) (school: School): string list =
-    match school.ContainsKey number with
-    | true -> school[number] |> List.sort
-    | _ -> []
