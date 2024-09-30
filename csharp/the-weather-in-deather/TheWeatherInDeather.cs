@@ -72,26 +72,20 @@ public class WeatherStation
     {
         get
         {
-            if (reading.WindDirection == WindDirection.Southerly
-                || reading.WindDirection == WindDirection.Easterly
-                && reading.Temperature > 20)
+            return reading.WindDirection switch
             {
-                return Outlook.Good;
-            }
-            if (reading.WindDirection == WindDirection.Northerly)
-            {
-                return Outlook.Cool;
-            }
-            if (reading.WindDirection == WindDirection.Easterly
-                && reading.Temperature <= 20)
-            {
-                return Outlook.Warm;
-            }
-            if (reading.WindDirection == WindDirection.Westerly)
-            {
-                return Outlook.Rainy;
-            }
-            throw new ArgumentException();
+                WindDirection.Southerly
+                    => Outlook.Good,
+                WindDirection.Northerly
+                    => Outlook.Cool,
+                WindDirection.Easterly when reading.Temperature > 20
+                    => Outlook.Good,
+                WindDirection.Easterly when reading.Temperature <= 20
+                    => Outlook.Warm,
+                WindDirection.Westerly
+                    => Outlook.Rainy,
+                _ => throw new ArgumentException()
+            };
         }
     }
 
