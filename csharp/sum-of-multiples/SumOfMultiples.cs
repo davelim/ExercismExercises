@@ -14,9 +14,9 @@ public static class SumOfMultiples
 
         IEnumerable<int> generateMultiples(int n)
         {
-            return Enumerable
-                .Range(0, max)
-                .Where(x => x % n ==0);
+            for (int i = 0; i < max; i+=n) {
+                yield return i;
+            }
         }
     }
 }
