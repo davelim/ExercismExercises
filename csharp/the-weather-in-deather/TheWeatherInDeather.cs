@@ -47,10 +47,10 @@ public class WeatherStation
         {
             return reading.Equals(new Reading())
                 ? throw new ArgumentException()
-                : reading.Temperature switch
+                : reading switch
                     {
-                        < 30m when reading.Pressure < 10m => Outlook.Cool,
-                        > 50 => Outlook.Good,
+                        {Temperature: < 30m, Pressure: < 10m} => Outlook.Cool,
+                        {Temperature: > 50} => Outlook.Good,
                         _ => Outlook.Warm
                     };
         }
@@ -60,17 +60,17 @@ public class WeatherStation
     {
         get
         {
-            return reading.WindDirection switch
+            return reading switch
             {
-                WindDirection.Southerly
+                {WindDirection: WindDirection.Southerly}
                     => Outlook.Good,
-                WindDirection.Northerly
+                {WindDirection: WindDirection.Northerly}
                     => Outlook.Cool,
-                WindDirection.Easterly when reading.Temperature > 20
+                {WindDirection: WindDirection.Easterly, Temperature: > 20}
                     => Outlook.Good,
-                WindDirection.Easterly when reading.Temperature <= 20
+                {WindDirection: WindDirection.Easterly, Temperature: <= 20}
                     => Outlook.Warm,
-                WindDirection.Westerly
+                {WindDirection: WindDirection.Westerly}
                     => Outlook.Rainy,
                 _ => throw new ArgumentException()
             };
