@@ -57,25 +57,14 @@ public class WeatherStation
     {
         get
         {
-            if (reading.Equals(new Reading()))
-            {
-                throw new ArgumentException();
-            }
-            else
-            {
-                if (reading.Pressure < 10m && reading.Temperature < 30m)
-                {
-                    return Outlook.Cool;
-                }
-                else if (reading.Temperature > 50)
-                {
-                    return Outlook.Good;
-                }
-                else
-                {
-                    return Outlook.Warm;
-                }
-            }
+            return reading.Equals(new Reading())
+                ? throw new ArgumentException()
+                : reading.Temperature switch
+                    {
+                        < 30m when reading.Pressure < 10m => Outlook.Cool,
+                        > 50 => Outlook.Good,
+                        _ => Outlook.Warm
+                    };
         }
     }
 
