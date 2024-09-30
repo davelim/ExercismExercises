@@ -6,17 +6,16 @@ public static class SumOfMultiples
 {
     public static int Sum(IEnumerable<int> multiples, int max)
     {
-        HashSet<int> numbers = new();
-        foreach (var baseValue in multiples) {
-            if (baseValue <= 0)
-                continue;
-            var i = 0;
-            int multiple;
-            while ((multiple = baseValue * i++) < max)
-            {
-                numbers.Add(multiple);
-            }
-        }
-        return numbers.Sum(n => n);
+        return multiples
+            .Where(n => n != 0)
+            .SelectMany(n =>
+                Enumerable
+                .Range(0, max)
+                .Where(x =>
+                    x % n == 0
+                )
+            )
+            .Distinct()
+            .Sum();
     }
 }
