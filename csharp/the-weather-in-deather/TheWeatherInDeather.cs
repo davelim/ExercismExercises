@@ -91,14 +91,9 @@ public class WeatherStation
 
     public State RunSelfTest()
     {
-        if (reading.Equals(new Reading()))
-        {
-            return State.Bad;
-        }
-        else
-        {
-            return State.Good;
-        }
+        return reading.Equals(new Reading())
+            ? State.Bad
+            : State.Good;
     }
 }
 
