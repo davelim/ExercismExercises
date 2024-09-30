@@ -23,34 +23,22 @@ public class WeatherStation
 
     public decimal LatestTemperature
     {
-        get
-        {
-            return reading.Temperature;
-        }
+        get => reading.Temperature;
     }
 
     public decimal LatestPressure
     {
-        get
-        {
-            return reading.Pressure;
-        }
+        get => reading.Pressure;
     }
 
     public decimal LatestRainfall
     {
-        get
-        {
-            return reading.Rainfall;
-        }
+        get => reading.Rainfall;
     }
 
     public bool HasHistory
     {
-        get
-        {
-            return recordDates.Count > 1 ? true : false;
-        }
+        get => recordDates.Count > 1 ? true : false;
     }
 
     public Outlook ShortTermOutlook
