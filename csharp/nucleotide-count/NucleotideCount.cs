@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 public static class NucleotideCount
@@ -10,16 +11,15 @@ public static class NucleotideCount
             throw new ArgumentException(
                 $"'{sequence}' is an invalid sequence.", "sequence");
 
-        var nucleotideCount = new Dictionary<char, int> {
-            {'A', 0}, {'C', 0}, {'G', 0}, {'T', 0}
-        };
-        foreach (var c  in sequence)
-        {
-            nucleotideCount[c]++;
-        }
-        return nucleotideCount;
+        return $"{sequence}ACGT"
+            .GroupBy(
+                nucleotide => nucleotide
+            )
+            .ToDictionary(
+                group => group.Key,
+                group => group.Count() - 1
+            );
     }
-
     private static bool InvalidSequence(string sequence)
     {
         var pattern = "[^ACGT]";
