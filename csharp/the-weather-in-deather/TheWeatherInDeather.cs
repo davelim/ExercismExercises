@@ -49,14 +49,7 @@ public class WeatherStation
     {
         get
         {
-            if (recordDates.Count > 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return recordDates.Count > 1 ? true : false;
         }
     }
 
