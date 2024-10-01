@@ -11,7 +11,7 @@ let add (student: string) (number: int) (school: School): School =
     let foundStudent =
         school
         |> Map.values
-        |> Seq.collect(fun x -> x)
+        |> Seq.collect id
         |> Seq.contains student
     if (foundStudent) then
         school
@@ -22,5 +22,5 @@ let roster (school: School): string list =
     school
     |> Map.keys
     |> Seq.map (fun num -> grade num school)
-    |> Seq.collect (fun li -> li)
+    |> Seq.collect id
     |> Seq.toList
