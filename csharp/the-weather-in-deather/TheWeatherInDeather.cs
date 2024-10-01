@@ -21,61 +21,38 @@ public class WeatherStation
         temperatures.Clear();
     }
 
-    public decimal LatestTemperature
-    {
-        get => reading.Temperature;
-    }
+    public decimal LatestTemperature => reading.Temperature;
 
-    public decimal LatestPressure
-    {
-        get => reading.Pressure;
-    }
+    public decimal LatestPressure => reading.Pressure;
 
-    public decimal LatestRainfall
-    {
-        get => reading.Rainfall;
-    }
+    public decimal LatestRainfall => reading.Rainfall;
 
-    public bool HasHistory
-    {
-        get => recordDates.Count > 1 ? true : false;
-    }
+    public bool HasHistory => recordDates.Count > 1 ? true : false;
 
-    public Outlook ShortTermOutlook
-    {
-        get
-        {
-            return reading.Equals(new Reading())
-                ? throw new ArgumentException()
-                : reading switch
-                    {
-                        {Temperature: < 30m, Pressure: < 10m} => Outlook.Cool,
-                        {Temperature: > 50} => Outlook.Good,
-                        _ => Outlook.Warm
-                    };
-        }
-    }
+    public Outlook ShortTermOutlook =>
+        reading.Equals(new Reading())
+        ? throw new ArgumentException()
+        : reading switch
+            {
+                {Temperature: < 30m, Pressure: < 10m} => Outlook.Cool,
+                {Temperature: > 50} => Outlook.Good,
+                _ => Outlook.Warm
+            };
 
-    public Outlook LongTermOutlook
-    {
-        get
-        {
-            return reading switch
+    public Outlook LongTermOutlook =>
+        reading switch
             {
                 {WindDirection: WindDirection.Southerly}
+                or {WindDirection: WindDirection.Easterly, Temperature: > 20}
                     => Outlook.Good,
                 {WindDirection: WindDirection.Northerly}
                     => Outlook.Cool,
-                {WindDirection: WindDirection.Easterly, Temperature: > 20}
-                    => Outlook.Good,
                 {WindDirection: WindDirection.Easterly, Temperature: <= 20}
                     => Outlook.Warm,
                 {WindDirection: WindDirection.Westerly}
                     => Outlook.Rainy,
                 _ => throw new ArgumentException()
             };
-        }
-    }
 
     public State RunSelfTest()
     {
