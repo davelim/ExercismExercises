@@ -20,7 +20,7 @@ let add (student: string) (number: int) (school: School): School =
 
 let roster (school: School): string list =
     school
-    |> Map.values
-    |> Seq.map (fun li -> li |> List.sort)
-    |> Seq.collect (fun x -> x)
+    |> Map.keys
+    |> Seq.map (fun num -> grade num school)
+    |> Seq.collect (fun li -> li)
     |> Seq.toList
