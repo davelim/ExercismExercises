@@ -54,12 +54,10 @@ public class WeatherStation
                 _ => throw new ArgumentException()
             };
 
-    public State RunSelfTest()
-    {
-        return reading.Equals(new Reading())
+    public State RunSelfTest() =>
+        reading.Equals(new Reading())
             ? State.Bad
             : State.Good;
-    }
 }
 
 /*** Please do not modify this struct ***/
