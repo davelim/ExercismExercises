@@ -34,8 +34,12 @@ type PostalContactInfo = {
     IsAddressValid: bool;
 }
 
+type ContactInfo =
+    | EmailOnly of EmailContactInfo
+    | PostOnly of PostalContactInfo
+    | EmailAndPost of EmailContactInfo * PostalContactInfo
+
 type Contact = {
     Name: PersonalName;
-    EmailContactInfo: EmailContactInfo;
-    PostalContactInfo: PostalContactInfo;
+    ContactInfo: ContactInfo;
 }
