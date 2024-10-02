@@ -1,10 +1,8 @@
 // wrap primitive types
+#load "EmailAddress.fs"
+open EmailAddress
+
 // - usually using single union type (easier to wrap/unwrap)
-type EmailAddress = EmailAddress of string
-let CreateEmailAddress (s:string) =
-    if System.Text.RegularExpressions.Regex.IsMatch(s, @"^\S+@\S+\.\S+$")
-        then s |> EmailAddress |> Some
-        else None
 type ZipCode = ZipCode of string
 type StateCode = StateCode of string
 let CreateStateCode (s:string) =
@@ -21,7 +19,7 @@ type PersonalName = {
     LastName: string;
 }
 type EmailContactInfo = {
-    EmailAddress: EmailAddress; // union type wrapped primitive
+    EmailAddress: EmailAddress.T; // union type wrapped primitive
     IsEmailVerified: bool;
 }
 type PostalAddress = {
