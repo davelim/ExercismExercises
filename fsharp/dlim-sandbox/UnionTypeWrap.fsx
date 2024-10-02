@@ -19,8 +19,8 @@ let addresses' =
 // 3. use create w/ continuation
 let success (EmailAddress s) = printfn "success creating email %s" s
 let failure msg = printfn "error creating email: %s" msg
-EmailAddress.createWithContinuations success failure "foo.com"
-EmailAddress.createWithContinuations success failure "a@foo.com"
+EmailAddress.createWithCont success failure "foo.com"
+EmailAddress.createWithCont success failure "a@foo.com"
 
 // 4. wrap/unwrap
 let addr1 = EmailAddress.create "a@foo.com"
@@ -32,3 +32,6 @@ let testAddr addr =
     | None -> printfn "None!"
 testAddr addr1
 testAddr addr2
+
+// 5. unwrap with continuation
+addr1 |> Option.get |> EmailAddress.apply (printfn "value is %A")
