@@ -1,18 +1,27 @@
 // record type
-type Contact = {
+type PersonalName = {
     FirstName: string;
-    MiddleInitial: string;
+    MiddleInitial: string option;
     LastName: string;
-
+}
+type EmailContactInfo = {
     EmailAddress: string;
-    //true if ownership of email address is confirmed
     IsEmailVerified: bool;
-
+}
+type PostalAddress = {
     Address1: string;
     Address2: string;
     City: string;
     State: string;
     Zip: string;
-    //true if validated against address service
+}
+type PostalContactInfo = {
+    Address: PostalAddress;
     IsAddressValid: bool;
+}
+
+type Contact = {
+    Name: PersonalName;
+    EmailContactInfo: EmailContactInfo;
+    PostalContactInfo: PostalContactInfo;
 }
