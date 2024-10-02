@@ -1,10 +1,12 @@
-// wrap primitive types
 #load "EmailAddress.fs"
 open EmailAddress
 
+// wrap primitive types
 // - usually using single union type (easier to wrap/unwrap)
 type ZipCode = ZipCode of string
 type StateCode = StateCode of string
+type PhoneContactInfo = string
+
 let CreateStateCode (s:string) =
     let s' = s.ToUpper()
     let stateCodes = ["AZ";"CA";"NY"] //etc
@@ -39,7 +41,18 @@ type ContactInfo =
     | PostOnly of PostalContactInfo
     | EmailAndPost of EmailContactInfo * PostalContactInfo
 
+type ContactMethod =
+    | Email of EmailContactInfo
+    | PostalAddress of PostalContactInfo
+    | HomePhone of PhoneContactInfo
+    | WorkPhone of PhoneContactInfo
+
+type ContactInformation = {
+    ContactMethod: ContactMethod list;
+}
+
 type Contact = {
     Name: PersonalName;
-    ContactInfo: ContactInfo;
+    PrimaryContactMethod: ContactMethod;
+    SecondaryContactMethod: ContactMethod list;
 }
