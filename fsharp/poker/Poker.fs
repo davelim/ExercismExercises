@@ -173,15 +173,15 @@ let notStraight = "4H 8S 6D 5C AS"
 //     | _ -> HighCardId
 
 let toTypedHands (hand: string): Hand =
-    let getRank (tupl: CardRank * CardRank seq) = tupl |> fst
-    let getCnt (tupl: CardRank * CardRank seq) = tupl |> snd
+    let getRank (tupl: CardRank * CardRank seq): CardRank = tupl |> fst
+    let getCnt (tupl: CardRank * CardRank seq): int = tupl |> snd |> Seq.length
     let groupedCards = // (CardRank * CardRank seq) seq
         hand
         |> getCardRanks
         |> Seq.groupBy id
-        |> Seq.sortByDescending (fun (r, s) -> s |> Seq.length)
+        |> Seq.sortByDescending getCnt
         |> Seq.toList
-    match (groupedCards |> List.map (fun (r, s) -> (s|>Seq.length))) with
+    match (groupedCards |> List.map getCnt) with
     | [4;1] ->
         let [fourCards;fifthCard] = groupedCards
         FourOfAKind {
