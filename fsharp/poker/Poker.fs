@@ -1,6 +1,6 @@
 module Poker
 
-type CardRank = 
+type CardRank = // int needed for straight, see cardsMonotonicByOne
     | Two = 2
     | Three = 3
     | Four = 4
@@ -67,39 +67,41 @@ let getCardRank (card: string): CardRank =
     card.TrimEnd(suit) |> toCardRank
 
 let getCardArr (hand: string): string array = hand.Split(" ")
-let sortCardRanks (cardArr: string seq): CardRank seq =
+let sortCardRanks (cardArr: string array): CardRank list =
     cardArr
     |> Seq.map getCardRank
     |> Seq.sortDescending
-let getCnt (tupl: CardRank * CardRank seq): int =
+    |> Seq.toList
+let getCnt (tupl: CardRank * CardRank list): int =
     tupl
     |> snd
-    |> Seq.length
-let groupCardRanks (cardRankSeq: CardRank seq): (CardRank * CardRank seq) list =
-    cardRankSeq
-    |> Seq.groupBy id
-    |> Seq.sortByDescending getCnt
-    |> Seq.toList
+    |> List.length
+let groupCardRanks (cardRankList: CardRank list): (CardRank * CardRank list) list =
+    cardRankList
+    |> List.groupBy id
+    |> List.sortByDescending getCnt
 
 let allCardsHaveTheSameSuit (cardArr: string array): bool =
     let sameSuit (cardX: string) (cardY:string) =
         (cardX |> getCardSuit) = (cardY |> getCardSuit)
     let firstCard = cardArr |> Seq.head
     cardArr |> Seq.forall (sameSuit firstCard)
-let cardsMonotonicByOne (cardRanks: CardRank seq): bool =
+let cardsMonotonicByOne (cardRanks: CardRank list): bool =
     let monotoneByOne (twoCards: CardRank * CardRank) = 
         let (a, b) = twoCards
         int b - int a = 1
     cardRanks
-    |> Seq.sort
-    |> Seq.pairwise
-    |> Seq.forall monotoneByOne
-let cardsLowestStraight (cardRanks: CardRank seq): bool =
-    (cardRanks |> Seq.contains CardRank.Ace)
-    && (cardRanks |> Seq.contains CardRank.Five)
-    && (cardRanks |> Seq.contains CardRank.Four)
-    && (cardRanks |> Seq.contains CardRank.Three)
-    && (cardRanks |> Seq.contains CardRank.Two)
+    |> List.sort
+    |> List.pairwise
+    |> List.forall monotoneByOne
+let cardsLowestStraight (cardRanks: CardRank list): bool =
+    cardRanks = [
+        CardRank.Ace;
+        CardRank.Five;
+        CardRank.Four;
+        CardRank.Three;
+        CardRank.Two
+    ]
 
 let getHandType (cardRankCount: int list) (flush: bool) (straight: bool): HandType =
     match cardRankCount with
@@ -134,7 +136,7 @@ let mapHand (hand: string): Hand =
         if lowestStraight then
             [CardRank.Five]
         elif regularStraight then
-            [sortedCards |> Seq.head]
+            [sortedCards |> List.head]
         else
             groupedCards
             |> List.map (fun t -> t |> fst)
@@ -143,10 +145,9 @@ let mapHand (hand: string): Hand =
 let bestHands (hands: string list): string list =
     let sortedHands =
         hands
-        |> Seq.map mapHand
-        |> Seq.sortDescending
-    let bestHand = sortedHands |> Seq.head
+        |> List.map mapHand
+        |> List.sortDescending
+    let bestHand = sortedHands |> List.head
     sortedHands
-    |> Seq.filter (fun h -> h = bestHand)
-    |> Seq.map (fun h -> h.Str)
-    |> Seq.toList
+    |> List.filter (fun h -> h = bestHand)
+    |> List.map (fun h -> h.Str)
