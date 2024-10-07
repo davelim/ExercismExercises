@@ -30,7 +30,7 @@ let toCardRank (rank: string): CardRank =
     | "Q" -> CardRank.Queen
     | "K" -> CardRank.King
     | _ (*"A"*) -> CardRank.Ace
-type HandType = // Note: order matters
+type HandType = // Note: order matters, see Hand.CompareTo()
     | HighCard
     | OnePair
     | TwoPair
@@ -122,9 +122,6 @@ let mapHand (hand: string): Hand =
     let cardArr = hand |> getCardArr
     let sortedCards = cardArr |> sortCardRanks
     let groupedCards = sortedCards |> groupCardRanks
-    let scoringCards =
-        groupedCards
-        |> List.map (fun t -> t |> fst)
 
     let isFlush = cardArr |> allCardsHaveTheSameSuit
     let lowestStraight = sortedCards |> cardsLowestStraight
@@ -133,13 +130,15 @@ let mapHand (hand: string): Hand =
 
     let cardRankCount = groupedCards |> List.map getCnt
     let handType = getHandType cardRankCount isFlush isStraight
-    match handType with
-    | FourOfAKind | FullHouse | ThreeOfAKind | TwoPair | OnePair | Flush | HighCard ->
-        Hand(hand, handType, scoringCards)
-    | _ (*Straight | StraightFlush*) ->
-        let scoringCards =
-            if lowestStraight then [CardRank.Five] else [sortedCards |> Seq.head]
-        Hand(hand, handType, scoringCards)
+    let scoringCards =
+        if lowestStraight then
+            [CardRank.Five]
+        elif regularStraight then
+            [sortedCards |> Seq.head]
+        else
+            groupedCards
+            |> List.map (fun t -> t |> fst)
+    Hand(hand, handType, scoringCards)
 
 let bestHands (hands: string list): string list =
     let sortedHands =
