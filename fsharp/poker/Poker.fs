@@ -43,7 +43,7 @@ type HandType =
     | FourOfAKind
     | StraightFlush
 
-type Hand (str: string, handType: HandType, cardRanks: CardRank list)=
+type Hand (str: string, handType: HandType, cardRanks: CardRank list) =
     member this.Str = str
     member this.HandType = handType
     member this.CardRanks = cardRanks
@@ -178,8 +178,12 @@ let createHand (hand: string): Hand =
                 Hand(hand, HighCard, sortedCardRanks |> Seq.toList)
     
 let bestHands (hands: string list): string list =
-    let bestHand =
+    let sortedHands =
         hands
         |> Seq.map createHand
-        |> Seq.max
-    [bestHand.Str]
+        |> Seq.sortDescending
+    let bestHand = sortedHands |> Seq.head
+    sortedHands
+    |> Seq.filter (fun h -> h = bestHand)
+    |> Seq.map (fun h -> h.Str)
+    |> Seq.toList
