@@ -119,25 +119,32 @@ let getCardRank (card: string): CardRank =
     card.TrimEnd(suit) |> toCardRank
 
 let getCardArr (hand: string): string array = hand.Split(" ")
-let getCardRanks (hand: string): CardRank seq =
-    hand
-    |> getCardArr
+let getCardRanks (cardArr: string seq): CardRank seq =
+    cardArr
     |> Seq.map getCardRank
     |> Seq.sort
 
 // Flush
-let allCardsTheHaveSameSuit (hand: string): bool =
-    let handArr = hand |> getCardArr
-    let sameSuit (cardX: string) (cardY:string) = 
-        (cardX |> getCardSuit) = (cardY |> getCardSuit)
-    let firstCard = handArr |> Seq.head
-    handArr |> Seq.forall (sameSuit firstCard)
 let flush = "AH 6H KH 4H 10H"
 let notFlush = "AH 6H KH 4H 10C"
+let allCardsHaveTheSameSuit (cardArr: string array): bool =
+    let sameSuit (cardX: string) (cardY:string) =
+        (cardX |> getCardSuit) = (cardY |> getCardSuit)
+    let firstCard = cardArr |> Seq.head
+    cardArr |> Seq.forall (sameSuit firstCard)
+let checkFlush (hand:string): Hand =
+    let cardArr = hand |> getCardArr
+    let cardRanks = cardArr |> getCardRanks
+
+    if allCardsHaveTheSameSuit cardArr then
+        Flush { CardRanks = cardRanks }
+    else
+        HighCard { CardRanks = cardRanks }
 
 // Straight
-// let cardsMonotonicByOne (hand: string): bool =
-//     let cardRanks = hand |> getCardRanks
+let lowStraight = "4S AH 3S 2D 5H"
+let regularStraight = "4H 8S 6D 5C 7S"
+let notStraight = "4H 8S 6D 5C AS"
 let cardsMonotonicByOne (cardRanks: CardRank seq): bool =
     let monotoneByOne (twoCards: CardRank * CardRank) = 
         let (a, b) = twoCards
@@ -146,38 +153,51 @@ let cardsMonotonicByOne (cardRanks: CardRank seq): bool =
     |> Seq.sort
     |> Seq.pairwise
     |> Seq.forall monotoneByOne
-// let cardsLowestStraight (cardRanks: CardRank seq): bool =
-//     let cardRanks = hand |> getCardRanks
 let cardsLowestStraight (cardRanks: CardRank seq): bool =
     (cardRanks |> Seq.contains CardRank.Ace)
     && (cardRanks |> Seq.contains CardRank.Five)
     && (cardRanks |> Seq.contains CardRank.Four)
     && (cardRanks |> Seq.contains CardRank.Three)
     && (cardRanks |> Seq.contains CardRank.Two)
-let lowStraight = "4S AH 3S 2D 5H"
-let regularStraight = "4H 8S 6D 5C 7S"
-let notStraight = "4H 8S 6D 5C AS"
+let checkStraight (hand: Hand): Hand =
+    match hand with
+    | Flush d ->
+        if cardsMonotonicByOne d.CardRanks then
+            StraightFlush { HighRank = d.CardRanks |> Seq.head } 
+        elif cardsLowestStraight d.CardRanks then
+            StraightFlush { HighRank = CardRank.Five }
+        else
+            Flush { CardRanks = d.CardRanks }
+    | HighCard d ->
+        if cardsMonotonicByOne d.CardRanks then
+            Straight { HighRank = d.CardRanks |> Seq.head }
+        elif cardsLowestStraight d.CardRanks then
+            Straight { HighRank = CardRank.Five }
+        else
+            hand
+    | _ -> hand
 
 // HighCard/OnePair/TwoPair/ThreeOfAKind/FullHouse/FourOfAKind
 
 // let groupCards (hand: string): (CardRank * CardRank seq) seq =
 //    let cardRanks = hand |> getCardRanks
-
-// let (|HighCardId|OnePairId|TwoPairId|ThreeOfAKindId|FullHouseId|FourOfAKindId|) (hand: int seq) =
-//     match rankCount with
-//     | [4;1] -> FourOfAKindId
-//     | [3;2] -> FullHouseId
-//     | [3;1;1] -> ThreeOfAKindId
-//     | [2;2;1] -> TwoPairId
-//     | [2;1;1] -> OnePairId
-//     | _ -> HighCardId
-
-let toTypedHands (hand: string): Hand =
+// let toTypedHands (hand: string): Hand =
+//     let getRank (tupl: CardRank * CardRank seq): CardRank = tupl |> fst
+//     let getCnt (tupl: CardRank * CardRank seq): int = tupl |> snd |> Seq.length
+//     // (CardRank * CardRank seq) seq
+//     let groupedCards =
+//         hand
+//         |> getCardRanks
+//         |> Seq.groupBy id
+//         |> Seq.sortByDescending getCnt
+//         |> Seq.toList
+// let checkOtherRanks (hand: Hand): Hand =
+let checkOtherRanks (cardRanks: CardRank seq): Hand =
     let getRank (tupl: CardRank * CardRank seq): CardRank = tupl |> fst
     let getCnt (tupl: CardRank * CardRank seq): int = tupl |> snd |> Seq.length
-    let groupedCards = // (CardRank * CardRank seq) seq
-        hand
-        |> getCardRanks
+    // (CardRank * CardRank seq) seq
+    let groupedCards =
+        cardRanks
         |> Seq.groupBy id
         |> Seq.sortByDescending getCnt
         |> Seq.toList
