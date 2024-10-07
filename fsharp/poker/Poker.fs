@@ -30,9 +30,7 @@ let toCardRank (rank: string): CardRank =
     | "Q" -> CardRank.Queen
     | "K" -> CardRank.King
     | _ (*"A"*) -> CardRank.Ace
-
-// Note: order matters
-type HandType =
+type HandType = // Note: order matters
     | HighCard
     | OnePair
     | TwoPair
@@ -42,7 +40,6 @@ type HandType =
     | FullHouse
     | FourOfAKind
     | StraightFlush
-
 type Hand (str: string, handType: HandType, cardRanks: CardRank list) =
     member this.Str = str
     member this.HandType = handType
@@ -63,6 +60,7 @@ type Hand (str: string, handType: HandType, cardRanks: CardRank list) =
         | _ -> invalidArg "other" "cannot compare values of different types"
     override this.GetHashCode () = hash (this.Str, this.HandType, this.CardRanks)
 
+// TODO: handle invalid suit?
 let getCardSuit (card: string): char = card |> Seq.last
 let getCardRank (card: string): CardRank =
     let suit = card |> getCardSuit
@@ -74,21 +72,20 @@ let sortCardRanks (cardArr: string seq): CardRank seq =
     |> Seq.map getCardRank
     |> Seq.sortDescending
 let getCnt (tupl: CardRank * CardRank seq): int =
-    tupl |> snd |> Seq.length
+    tupl
+    |> snd
+    |> Seq.length
 let groupCardRanks (cardRankSeq: CardRank seq): (CardRank * CardRank seq) list =
     cardRankSeq
     |> Seq.groupBy id
     |> Seq.sortByDescending getCnt
     |> Seq.toList
 
-// Flush
 let allCardsHaveTheSameSuit (cardArr: string array): bool =
     let sameSuit (cardX: string) (cardY:string) =
         (cardX |> getCardSuit) = (cardY |> getCardSuit)
     let firstCard = cardArr |> Seq.head
     cardArr |> Seq.forall (sameSuit firstCard)
-
-// Straight
 let cardsMonotonicByOne (cardRanks: CardRank seq): bool =
     let monotoneByOne (twoCards: CardRank * CardRank) = 
         let (a, b) = twoCards
@@ -104,83 +101,50 @@ let cardsLowestStraight (cardRanks: CardRank seq): bool =
     && (cardRanks |> Seq.contains CardRank.Three)
     && (cardRanks |> Seq.contains CardRank.Two)
 
-// HighCard/OnePair/TwoPair/ThreeOfAKind/FullHouse/FourOfAKind
-let getHandType (cardRankCount: int list): HandType =
+let getHandType (cardRankCount: int list) (flush: bool) (straight: bool): HandType =
     match cardRankCount with
     | [4;1] -> FourOfAKind
     | [3;2] -> FullHouse
     | [3;1;1] -> ThreeOfAKind
     | [2;2;1] -> TwoPair
     | [2;1;1;1] -> OnePair
-    | _ -> HighCard
+    | _ ->
+        if straight && flush then
+            StraightFlush
+        elif straight then
+            Straight
+        elif flush then
+            Flush
+        else
+            HighCard
 
-let createHand (hand: string): Hand =
+let mapHand (hand: string): Hand =
     let cardArr = hand |> getCardArr
-    let sortedCardRanks = cardArr |> sortCardRanks
-    let groupedCardRanks = sortedCardRanks |> groupCardRanks
+    let sortedCards = cardArr |> sortCardRanks
+    let groupedCards = sortedCards |> groupCardRanks
+    let scoringCards =
+        groupedCards
+        |> List.map (fun t -> t |> fst)
 
-    let handType = getHandType (groupedCardRanks |> List.map getCnt)
+    let isFlush = cardArr |> allCardsHaveTheSameSuit
+    let lowestStraight = sortedCards |> cardsLowestStraight
+    let regularStraight = sortedCards |> cardsMonotonicByOne
+    let isStraight = lowestStraight || regularStraight
 
-    let getRank (tupl: CardRank * CardRank seq): CardRank = tupl |> fst
+    let cardRankCount = groupedCards |> List.map getCnt
+    let handType = getHandType cardRankCount isFlush isStraight
     match handType with
-    | FourOfAKind ->
-        let [fourCards;fifthCard] = groupedCardRanks
-        Hand(hand, handType, [
-            (fourCards |> getRank);
-            (fifthCard |> getRank)
-        ])
-    | FullHouse ->
-        let [threeCards;pair] = groupedCardRanks
-        Hand(hand, handType, [
-            (threeCards |> getRank);
-            (pair |> getRank)
-        ])
-    | ThreeOfAKind ->
-        let [threeCards;high;low] = groupedCardRanks
-        Hand(hand, handType, [
-            (threeCards |> getRank);
-            (high |> getRank);
-            (low |> getRank);
-        ])
-    | TwoPair ->
-        let [highPair;lowPair;fifthCard] = groupedCardRanks
-        Hand(hand, handType, [
-            (highPair |> getRank);
-            (lowPair |> getRank);
-            (fifthCard |> getRank);
-        ])
-    | OnePair ->
-        let [pair;highCard;midCard;lowCard] = groupedCardRanks
-        Hand(hand, handType, [
-            (pair |> getRank);
-            (highCard |> getRank);
-            (midCard |> getRank);
-            (lowCard |> getRank);
-        ])
-    | _ -> // HighCard
-        let isFlush = cardArr |> allCardsHaveTheSameSuit
-        let isLowestStraight = sortedCardRanks |> cardsLowestStraight
-        let isStraight = sortedCardRanks |> cardsMonotonicByOne
-        let highCardRank = sortedCardRanks |> Seq.head
-        if isFlush then
-            if isLowestStraight then
-                Hand(hand, StraightFlush, [CardRank.Five])
-            elif isStraight then
-                Hand(hand, StraightFlush, [highCardRank])
-            else
-                Hand(hand, Flush, sortedCardRanks |> Seq.toList)
-        else // HighCard
-            if isLowestStraight then
-                Hand(hand, Straight, [CardRank.Five])
-            elif isStraight then
-                Hand(hand, Straight, [highCardRank])
-            else
-                Hand(hand, HighCard, sortedCardRanks |> Seq.toList)
-    
+    | FourOfAKind | FullHouse | ThreeOfAKind | TwoPair | OnePair | Flush | HighCard ->
+        Hand(hand, handType, scoringCards)
+    | _ (*Straight | StraightFlush*) ->
+        let scoringCards =
+            if lowestStraight then [CardRank.Five] else [sortedCards |> Seq.head]
+        Hand(hand, handType, scoringCards)
+
 let bestHands (hands: string list): string list =
     let sortedHands =
         hands
-        |> Seq.map createHand
+        |> Seq.map mapHand
         |> Seq.sortDescending
     let bestHand = sortedHands |> Seq.head
     sortedHands
