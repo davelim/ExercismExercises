@@ -1,7 +1,4 @@
 module Poker
-// open System
-// open System.Text.RegularExpressions
-
 // https://fsharpforfunandprofit.com/posts/convenience-types/
 // https://fsharpforfunandprofit.com/series/designing-with-types/
 // TODO: implement this module
@@ -57,7 +54,6 @@ type Card (rank: CardRank, suit: Suit) =
         | :? Card as c -> this.Rank = c.Rank
         | _ -> invalidArg "other" "cannot compare values of different types"
     override this.GetHashCode () = hash this.Rank
-        
 
 let createCard (card: string): Card =
     let (rank, suit) =
@@ -67,7 +63,6 @@ let createCard (card: string): Card =
     new Card ((rank |> toCardRank), (suit |> Suit))
 
 // 4. types of Hands (ranked)
-// - compareTo (other:Hand): Hand
 type StraightFlushData = {
     HighRank: CardRank;
 }
@@ -119,10 +114,17 @@ let getCardRank (card: string): CardRank =
     card.TrimEnd(suit) |> toCardRank
 
 let getCardArr (hand: string): string array = hand.Split(" ")
-let getCardRanks (cardArr: string seq): CardRank seq =
+let sortCardRanks (cardArr: string seq): CardRank seq =
     cardArr
     |> Seq.map getCardRank
     |> Seq.sort
+let getCnt (tupl: CardRank * CardRank seq): int =
+    tupl |> snd |> Seq.length
+let groupCardRanks (cardRankSeq: CardRank seq): (CardRank * CardRank seq) list =
+    cardRankSeq
+    |> Seq.groupBy id
+    |> Seq.sortByDescending getCnt
+    |> Seq.toList
 
 // Flush
 let flush = "AH 6H KH 4H 10H"
@@ -132,14 +134,6 @@ let allCardsHaveTheSameSuit (cardArr: string array): bool =
         (cardX |> getCardSuit) = (cardY |> getCardSuit)
     let firstCard = cardArr |> Seq.head
     cardArr |> Seq.forall (sameSuit firstCard)
-let checkFlush (hand:string): Hand =
-    let cardArr = hand |> getCardArr
-    let cardRanks = cardArr |> getCardRanks
-
-    if allCardsHaveTheSameSuit cardArr then
-        Flush { CardRanks = cardRanks }
-    else
-        HighCard { CardRanks = cardRanks }
 
 // Straight
 let lowStraight = "4S AH 3S 2D 5H"
@@ -159,63 +153,34 @@ let cardsLowestStraight (cardRanks: CardRank seq): bool =
     && (cardRanks |> Seq.contains CardRank.Four)
     && (cardRanks |> Seq.contains CardRank.Three)
     && (cardRanks |> Seq.contains CardRank.Two)
-let checkStraight (hand: Hand): Hand =
-    match hand with
-    | Flush d ->
-        if cardsMonotonicByOne d.CardRanks then
-            StraightFlush { HighRank = d.CardRanks |> Seq.head } 
-        elif cardsLowestStraight d.CardRanks then
-            StraightFlush { HighRank = CardRank.Five }
-        else
-            Flush { CardRanks = d.CardRanks }
-    | HighCard d ->
-        if cardsMonotonicByOne d.CardRanks then
-            Straight { HighRank = d.CardRanks |> Seq.head }
-        elif cardsLowestStraight d.CardRanks then
-            Straight { HighRank = CardRank.Five }
-        else
-            hand
-    | _ -> hand
 
 // HighCard/OnePair/TwoPair/ThreeOfAKind/FullHouse/FourOfAKind
+let rankHand (hand: string): Hand =
+    let cardArr = hand |> getCardArr
+    let sortedCardRanks = cardArr |> sortCardRanks
+    let groupedCardRankList = sortedCardRanks |> groupCardRanks
 
-// let groupCards (hand: string): (CardRank * CardRank seq) seq =
-//    let cardRanks = hand |> getCardRanks
-// let toTypedHands (hand: string): Hand =
-//     let getRank (tupl: CardRank * CardRank seq): CardRank = tupl |> fst
-//     let getCnt (tupl: CardRank * CardRank seq): int = tupl |> snd |> Seq.length
-//     // (CardRank * CardRank seq) seq
-//     let groupedCards =
-//         hand
-//         |> getCardRanks
-//         |> Seq.groupBy id
-//         |> Seq.sortByDescending getCnt
-//         |> Seq.toList
-// let checkOtherRanks (hand: Hand): Hand =
-let checkOtherRanks (cardRanks: CardRank seq): Hand =
-    let getRank (tupl: CardRank * CardRank seq): CardRank = tupl |> fst
-    let getCnt (tupl: CardRank * CardRank seq): int = tupl |> snd |> Seq.length
-    // (CardRank * CardRank seq) seq
-    let groupedCards =
-        cardRanks
-        |> Seq.groupBy id
-        |> Seq.sortByDescending getCnt
-        |> Seq.toList
-    match (groupedCards |> List.map getCnt) with
+    let isFlush = cardArr |> allCardsHaveTheSameSuit
+    let isLowestStraight = sortedCardRanks |> cardsLowestStraight
+    let isStraight = sortedCardRanks |> cardsMonotonicByOne
+
+    let getRank (tupl: CardRank * CardRank seq): CardRank =
+        tupl |> fst
+    match (groupedCardRankList |> List.map getCnt) with
     | [4;1] ->
-        let [fourCards;fifthCard] = groupedCards
+        let [fourCards;fifthCard] = groupedCardRankList
         FourOfAKind {
             FourCardRank = fourCards |> getRank;
             FifthCardRank = fifthCard |> getRank;
         }
     | [3;2] ->
-        let [threeCards;pair] = groupedCards
+        let [threeCards;pair] = groupedCardRankList
         FullHouse {
             ThreeCardRank = threeCards |> getRank;
             PairRank = pair |> getRank;
         }
     | [3;1;1] ->
-        let [threeCards;high;low] = groupedCards
+        let [threeCards;high;low] = groupedCardRankList
         ThreeOfAKind {
             ThreeCardRank = threeCards |> getRank;
             OtherRanks = seq {
@@ -223,14 +188,14 @@ let checkOtherRanks (cardRanks: CardRank seq): Hand =
                 low |> getRank};
         }
     | [2;2;1] ->
-        let [highPair;lowPair;fifthCard] = groupedCards
+        let [highPair;lowPair;fifthCard] = groupedCardRankList
         TwoPair {
             HighPairRank = highPair |> getRank;
             LowPairRank = lowPair |> getRank;
             FifthCardRank = fifthCard |> getRank;
         }
-    | [2;1;1;1] -> 
-        let [pair;highCard;midCard;lowCard] = groupedCards
+    | [2;1;1;1] ->
+        let [pair;highCard;midCard;lowCard] = groupedCardRankList
         OnePair {
             PairRank = pair |> getRank;
             OtherCardRanks = seq {
@@ -240,20 +205,27 @@ let checkOtherRanks (cardRanks: CardRank seq): Hand =
             }
         }
     | _ ->
-        HighCard {
-            CardRanks = groupedCards |> Seq.map getRank;
-        }
-
-// let rankHand (unRankedHand: UnRankedHandData): Hand =
-//     match unRankedHand with
-//     | _ -> 
-//     failwith "Not implemented"
+        let highCardRank = sortedCardRanks |> Seq.head
+        if isFlush then
+            if isLowestStraight then
+                StraightFlush { HighRank = CardRank.Five }
+            elif isStraight then
+                StraightFlush { HighRank = highCardRank }
+            else
+                Flush { CardRanks = sortedCardRanks }
+        else
+            if isLowestStraight then
+                Straight { HighRank = CardRank.Five }
+            elif isStraight then
+                Straight { HighRank = highCardRank }
+            else
+                HighCard { CardRanks = sortedCardRanks }
+    
 let bestHands (hands: string list): string list =
-    failwith "Not implemented."
+    // failwith "Not implemented."
     (*
     hands
-    |> Seq.map (fun hand -> hand.Split(" "))
-    |> Seq.map checkFlush
-    |> Seq.map toPokerHands
+    |> Seq.map rankHand
     |> Seq.max/Seq.maxBy/Seq.sort
+    |> Seq.head
     *)
