@@ -127,11 +127,8 @@ let mapHand (hand: string): Hand =
             Hand(hand, HighCard, scoringCards)
 
 let bestHands (hands: string list): string list =
-    let sortedHands =
-        hands
-        |> List.map mapHand
-        |> List.sortDescending
-    let bestHand = sortedHands |> List.head
-    sortedHands
-    |> List.filter (fun h -> h = bestHand)
+    let allHands = hands |> List.map mapHand
+    let bestHand = allHands |> List.max
+    allHands
+    |> List.filter(fun h -> h = bestHand)
     |> List.map (fun h -> h.Str)
