@@ -103,22 +103,15 @@ let cardsLowestStraight (cardRanks: CardRank list): bool =
         CardRank.Two
     ]
 
-let getHandType (cardRankCount: int list) (flush: bool) (straight: bool): HandType =
-    match cardRankCount with
-    | [4;1] -> FourOfAKind
-    | [3;2] -> FullHouse
-    | [3;1;1] -> ThreeOfAKind
-    | [2;2;1] -> TwoPair
-    | [2;1;1;1] -> OnePair
-    | _ ->
-        if straight && flush then
-            StraightFlush
-        elif straight then
-            Straight
-        elif flush then
-            Flush
-        else
-            HighCard
+let (|GroupedCardsHandTypes|_|) groupedCards =
+    let cardRankToCnt = groupedCards |> List.map getCnt
+    match cardRankToCnt with
+    | [4;1] -> Some FourOfAKind
+    | [3;2] -> Some FullHouse
+    | [3;1;1] -> Some ThreeOfAKind
+    | [2;2;1] -> Some TwoPair
+    | [2;1;1;1] -> Some OnePair
+    | _ -> None
 
 let mapHand (hand: string): Hand =
     let cardArr = hand |> getCardArr
@@ -130,8 +123,6 @@ let mapHand (hand: string): Hand =
     let regularStraight = sortedCards |> cardsMonotonicByOne
     let isStraight = lowestStraight || regularStraight
 
-    let cardRankCount = groupedCards |> List.map getCnt
-    let handType = getHandType cardRankCount isFlush isStraight
     let scoringCards =
         if lowestStraight then
             [CardRank.Five]
@@ -140,7 +131,18 @@ let mapHand (hand: string): Hand =
         else
             groupedCards
             |> List.map (fun t -> t |> fst)
-    Hand(hand, handType, scoringCards)
+    match groupedCards with
+    | GroupedCardsHandTypes htype ->  // e.g. Four of a kind, pair, etc.
+        Hand(hand, htype, scoringCards)
+    | _ ->
+        if isStraight && isFlush then
+            Hand(hand, StraightFlush, scoringCards)
+        elif isStraight then
+            Hand(hand, Straight, scoringCards)
+        elif isFlush then
+            Hand(hand, Flush, scoringCards)
+        else
+            Hand(hand, HighCard, scoringCards)
 
 let bestHands (hands: string list): string list =
     let sortedHands =
