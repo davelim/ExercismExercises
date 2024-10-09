@@ -1,46 +1,42 @@
 module BankAccount
 
-type AccountData = { Balance: decimal }
-type Account =
+type AccountType =
     | NewAccount
-    | OpenedAccount of AccountData
+    | OpenedAccount
     | ClosedAccount
-// TODO: keep balance around for ClosedAccount? Is Closed-to-Opened ok?
+type Account() =
+    let mutable AType = AccountType.NewAccount
+    let mutable Balance = 0.0m
 
-let mkBankAccount() = NewAccount
+    member this.GetType = AType
+    member this.GetBalance = Balance
+    member this.SetType t =
+        AType <- t
+    member this.UpdateBalance c =
+        Balance <- this.GetBalance + c
 
-let openAccount account =
-    match account with
-    | NewAccount ->
-        OpenedAccount {Balance = 0.0m}
-    | OpenedAccount _ ->
-        account
-    | ClosedAccount ->
-        account
+let mkBankAccount() = new Account()
 
-let closeAccount account =
-    match account with
-    | NewAccount ->
-        account
-    | OpenedAccount _ ->
-        ClosedAccount
-    | ClosedAccount ->
-        account
+let openAccount (account: Account) =
+    // if account is already opened, or closed, nothing to do
+    if (account.GetType = AccountType.NewAccount) then
+        account.SetType AccountType.OpenedAccount
+    account
 
-let getBalance account =
-    match account with
-    | NewAccount ->
+let closeAccount (account: Account) =
+    // if account is new, or already closed, nothing to do
+    if (account.GetType = AccountType.OpenedAccount) then
+       account.SetType AccountType.ClosedAccount
+    account
+
+let getBalance (account: Account) =
+    // if account is new, or closed, no balance to speak of
+    if (account.GetType = AccountType.OpenedAccount) then
+        Some account.GetBalance
+    else
         None
-    | OpenedAccount {Balance=balance} ->
-        Some balance
-    | ClosedAccount ->
-        None
 
-let updateBalance change account =
-    match account with
-    | NewAccount ->
-        account
-    | OpenedAccount {Balance=balance} ->
-        OpenedAccount {Balance = balance + change}
-    | ClosedAccount ->
-        account
+let updateBalance change (account: Account) =
+    if (account.GetType = AccountType.OpenedAccount) then
+        account.UpdateBalance change
+    account
