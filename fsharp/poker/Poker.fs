@@ -1,22 +1,37 @@
 module Poker
 
-// TODO: handle invalid rank?
-type CardRank = CardRank of int
-let toCardRank (rank: string): CardRank =
+let (|ValidSuit|_|) suit =
+    match suit with
+    | 'C' | 'D' | 'H' | 'S' -> Some suit
+    | _ -> None
+let getCardSuit (card: string): char =
+    match (card |> Seq.last) with
+    | ValidSuit s -> s
+    | _ -> invalidArg "card" $"'{card}' has an invalid suit"
+
+let (|ValidRank|_|) rank =
     match rank with
-    | "2" -> CardRank 2
-    | "3" -> CardRank 3
-    | "4" -> CardRank 4
-    | "5" -> CardRank 5
-    | "6" -> CardRank 6
-    | "7" -> CardRank 7
-    | "8" -> CardRank 8
-    | "9" -> CardRank 9
-    | "10" -> CardRank 10
-    | "J" -> CardRank 11
-    | "Q" -> CardRank 12
-    | "K" -> CardRank 13
-    | _ (*"A"*) -> CardRank 14
+    | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A" ->
+        Some rank
+    | _ ->
+        None
+type CardRank = CardRank of int
+let getCardRank (card: string): CardRank =
+    let suit = card |> getCardSuit
+    match card.TrimEnd(suit) with
+    | ValidRank rank ->
+        try
+            // "2" through "10"
+            rank |> int |> CardRank
+        with :? System.FormatException ->
+            // "J" through "A"
+            match rank with
+            | "J" -> CardRank 11
+            | "Q" -> CardRank 12
+            | "K" -> CardRank 13
+            | _ (*"A"*) -> CardRank 14
+    | _ -> invalidArg "card" $"'{card}' has an invalid rank"
+
 type HandType = // Note: order matters, see Hand.CompareTo()
     | HighCard
     | OnePair
@@ -46,12 +61,6 @@ type Hand (str: string, handType: HandType, cardRanks: CardRank list) =
         | :? Hand as h -> this.HandType = h.HandType && this.CardRanks = h.CardRanks
         | _ -> invalidArg "other" "cannot compare values of different types"
     override this.GetHashCode () = hash (this.Str, this.HandType, this.CardRanks)
-
-// TODO: handle invalid suit?
-let getCardSuit (card: string): char = card |> Seq.last
-let getCardRank (card: string): CardRank =
-    let suit = card |> getCardSuit
-    card.TrimEnd(suit) |> toCardRank
 
 let getCardArr (hand: string): string array = hand.Split(" ")
 let sortCardRanks (cardArr: string array): CardRank list =
@@ -94,16 +103,13 @@ let (|GroupedCardsHandTypes|_|) groupedCards =
     | [2;2;1] -> Some TwoPair
     | [2;1;1;1] -> Some OnePair
     | _ -> None
-
 let mapHand (hand: string): Hand =
     let cardArr = hand |> getCardArr
     let sortedCards = cardArr |> sortCardRanks
     let groupedCards = sortedCards |> groupCardRanks
 
-    let isFlush = cardArr |> allCardsHaveTheSameSuit
     let lowestStraight = sortedCards |> cardsLowestStraight
     let regularStraight = sortedCards |> cardsMonotonicByOne
-    let isStraight = lowestStraight || regularStraight
 
     let scoringCards =
         if lowestStraight then
@@ -113,18 +119,24 @@ let mapHand (hand: string): Hand =
         else
             groupedCards
             |> List.map (fun t -> t |> fst)
-    match groupedCards with
-    | GroupedCardsHandTypes htype ->  // e.g. Four of a kind, pair, etc.
-        Hand(hand, htype, scoringCards)
-    | _ ->
-        if isStraight && isFlush then
-            Hand(hand, StraightFlush, scoringCards)
-        elif isStraight then
-            Hand(hand, Straight, scoringCards)
-        elif isFlush then
-            Hand(hand, Flush, scoringCards)
-        else
-            Hand(hand, HighCard, scoringCards)
+    let handType =
+        match groupedCards with
+        // pair, three of kind, full house, etc.
+        | GroupedCardsHandTypes htype -> htype
+        | _ ->
+            // flush, straight, high card
+            let isFlush = cardArr |> allCardsHaveTheSameSuit
+            let isStraight = lowestStraight || regularStraight
+            if isStraight && isFlush then
+                StraightFlush
+            elif isStraight then
+                Straight
+            elif isFlush then
+                Flush
+            else
+                HighCard
+
+    Hand(hand, handType, scoringCards)
 
 let bestHands (hands: string list): string list =
     let allHands = hands |> List.map mapHand
