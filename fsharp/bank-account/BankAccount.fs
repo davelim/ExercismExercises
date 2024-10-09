@@ -5,6 +5,9 @@ type AccountType =
     | OpenedAccount
     | ClosedAccount
 type Account() =
+    // https://fsharpforfunandprofit.com/posts/concurrency-actor-model/
+    // - The locking approach to shared state
+    let _lock = System.Object()
     let mutable AType = AccountType.NewAccount
     let mutable Balance = 0.0m
 
@@ -13,7 +16,9 @@ type Account() =
     member this.SetType t =
         AType <- t
     member this.UpdateBalance c =
-        Balance <- this.GetBalance + c
+        lock _lock (fun () ->
+            Balance <- this.GetBalance + c
+        )
 
 let mkBankAccount() = new Account()
 
