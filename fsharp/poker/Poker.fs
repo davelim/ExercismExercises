@@ -9,27 +9,21 @@ let getCardSuit (card: string): char =
     | ValidSuit s -> s
     | _ -> invalidArg "card" $"'{card}' has an invalid suit"
 
-let (|ValidRank|_|) rank =
-    match rank with
-    | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A" ->
-        Some rank
-    | _ ->
-        None
 type CardRank = CardRank of int
+let (|ValidInts|_|) rank =
+    match rank with
+    | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" ->
+        rank |> int |> Some
+    | _ -> 
+        None
 let getCardRank (card: string): CardRank =
     let suit = card |> getCardSuit
     match card.TrimEnd(suit) with
-    | ValidRank rank ->
-        try
-            // "2" through "10"
-            rank |> int |> CardRank
-        with :? System.FormatException ->
-            // "J" through "A"
-            match rank with
-            | "J" -> CardRank 11
-            | "Q" -> CardRank 12
-            | "K" -> CardRank 13
-            | _ (*"A"*) -> CardRank 14
+    | ValidInts i -> CardRank i
+    | "J" -> CardRank 11
+    | "Q" -> CardRank 12
+    | "K" -> CardRank 13
+    | "A" -> CardRank 14
     | _ -> invalidArg "card" $"'{card}' has an invalid rank"
 
 type HandType = // Note: order matters, see Hand.CompareTo()
